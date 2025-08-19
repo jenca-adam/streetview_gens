@@ -5,6 +5,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.pipeline import make_pipeline
 from sklearn.metrics import classification_report
+import skimage.measure
 import glob
 import os
 import tqdm
@@ -25,18 +26,15 @@ def analyze_entropy(im):
     return skimage.measure.shannon_entropy(im)
 
 
-def analyze_blur(im):
-    gray = cv2.cvtColor(im, cv2.COLOR_BGR2GRAY)
+def analyze_blur(gray):
     return cv2.Laplacian(gray, cv2.CV_64F).var()
 
 
-def analyze_noise(im):
-    gray = cv2.cvtColor(im, cv2.COLOR_BGR2GRAY)
+def analyze_noise(gray):
     return np.var(gray)
 
 
-def analyze_edge_density(im):
-    gray = cv2.cvtColor(im, cv2.COLOR_BGR2GRAY)
+def analyze_edge_density(gray):
     edges = cv2.Canny(gray, threshold1=100, threshold2=200)
     edge_pixels = np.count_nonzero(edges)
     total_pixels = edges.size
@@ -44,12 +42,13 @@ def analyze_edge_density(im):
 
 def extract_features(filename):
     im = cv2.imread(filename)
+    gray = cv2.cvtColor(im, cv2.COLOR_BGR2GRAY)
     features = []
     features.extend(analyze_histogram(im))
     #features.append(analyze_entropy(im))
-    features.append(analyze_blur(im))
-    features.append(analyze_noise(im))
-    features.append(analyze_edge_density(im))
+    features.append(analyze_blur(gray))
+    features.append(analyze_noise(gray))
+    features.append(analyze_edge_density(gray))
     return np.array(features)
 
 

@@ -6,7 +6,7 @@ import gt_mapmaker
 import tqdm
 from aiohttp.client import ClientSession
 
-GEN2_COUNTRIES = ["ie", "im", "je", "mc", "mo"][1:]  # NEEDS MANUAL REVIEW
+GEN2_COUNTRIES = ["ie", "im", "je", "mo", "fr", "mc" ] [1:]# NEEDS MANUAL REVIEW
 DROPS_PER_COUNTRY = 200
 RETRIES = 50
 MAX_CONCURRENT = 128
@@ -18,9 +18,17 @@ async def get_gen2_pano(trigrid, sem, session, country):
         pano = await streetlevel.streetview.find_panorama_async(
             lat, lon, session, radius=1000
         )
+
         if not pano:
             continue
-
+        if pano.date.year not in [2009, 2010, 2011]:
+            for hist in pano.historical:
+                if hist.date.year in [2009, 2010, 2011]:
+                    pano=hist
+                    break
+            else:
+                continue
+        
         # filter out trekker / gen4 / gen1
         if pano.source == "launch" and pano.image_sizes[-1] == Size(13312, 6656):
             # async with sem:  # limit simultaneous downloads
@@ -51,8 +59,6 @@ async def process_country(country, trigrid, session):
     for coro in tqdm.tqdm(asyncio.as_completed(tasks), total=DROPS_PER_COUNTRY):
         pano, image = await coro
         if pano and image:
-            with image:
-                image.save(f"samples/{country}/{pano.id}.jpg")
             results.append(pano.id)
     return results
 

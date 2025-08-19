@@ -12,7 +12,7 @@ RETRIES = 10
 MAX_CONCURRENT = 128
 
 
-async def get_shitcam_pano(trigrid, sem, session):
+async def get_shitcam_pano(trigrid, sem, session, country):
     for _ in range(RETRIES):
         lon, lat = trigrid.rand_point()
         pano = await streetlevel.streetview.find_panorama_async(
@@ -26,6 +26,9 @@ async def get_shitcam_pano(trigrid, sem, session):
             # async with sem:  # limit simultaneous downloads
             try:
                 image = await streetlevel.streetview.get_panorama_async(pano, session)
+                if pano and image:
+                    with image:
+                        image.save(f"samples/{country}/{pano.id}.jpg")
                 return pano, image
             except Exception as e:
                 print(f"download failed, retrying: {e}")
@@ -38,14 +41,12 @@ async def process_country(country, trigrid, session):
     os.makedirs(f"samples/{country}", exist_ok=True)
 
     sem = asyncio.Semaphore(MAX_CONCURRENT)
-    tasks = [get_shitcam_pano(trigrid, sem, session) for _ in range(DROPS_PER_COUNTRY)]
+    tasks = [get_shitcam_pano(trigrid, sem, session, country) for _ in range(DROPS_PER_COUNTRY)]
 
     results = []
     for coro in tqdm.tqdm(asyncio.as_completed(tasks), total=DROPS_PER_COUNTRY):
         pano, image = await coro
-        if pano and image:
-            with image:
-                image.save(f"samples/{country}/{pano.id}.jpg")
+        if pano:
             results.append(pano.id)
     return results
 
