@@ -2,6 +2,7 @@ import joblib
 import importlib_resources
 import cv2
 import numpy as np
+import skimage.measure
 
 with importlib_resources.path("streetview_gens", "data/model.pkl") as p:
     model = joblib.load(p)
@@ -15,6 +16,8 @@ def analyze_histogram(im):
     return hists
 
 
+def analyze_entropy(im):
+    return skimage.measure.shannon_entropy(im)
 def analyze_blur(im):
     gray = cv2.cvtColor(im, cv2.COLOR_BGR2GRAY)
     return cv2.Laplacian(gray, cv2.CV_64F).var()
@@ -36,6 +39,7 @@ def analyze_edge_density(im):
 def embed(im):
     features = []
     features.extend(analyze_histogram(im))
+    features.append(analyze_entropy(im))
     features.append(analyze_blur(im))
     features.append(analyze_noise(im))
     features.append(analyze_edge_density(im))

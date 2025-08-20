@@ -34,6 +34,7 @@ GEN3_COUNTRIES = [
     "as",
     "mp",
     "cw",
+    "sk"
 ]  # a lot of gen3
 DROPS_PER_COUNTRY = 20
 RETRIES = 50
@@ -44,7 +45,7 @@ async def get_gen3_pano(trigrid, sem, session, country):
     for _ in range(RETRIES):
         lon, lat = trigrid.rand_point()
         pano = await streetlevel.streetview.find_panorama_async(
-            lat, lon, session, radius=1000
+            lat, lon, session, radius=10000
         )
         if not pano:
             continue

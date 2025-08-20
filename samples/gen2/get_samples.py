@@ -6,7 +6,7 @@ import gt_mapmaker
 import tqdm
 from aiohttp.client import ClientSession
 
-GEN2_COUNTRIES = ["ie", "im", "je", "mo", "fr", "mc" ] [1:]# NEEDS MANUAL REVIEW
+GEN2_COUNTRIES = [ "im", "je", "mo", "fr", "mc", "gb", "es", "ie"] [-1:]# NEEDS MANUAL REVIEW
 DROPS_PER_COUNTRY = 200
 RETRIES = 50
 MAX_CONCURRENT = 128
@@ -21,9 +21,9 @@ async def get_gen2_pano(trigrid, sem, session, country):
 
         if not pano:
             continue
-        if pano.date.year not in [2009, 2010, 2011]:
+        if pano.date.year not in [2009, 2010,2011]:
             for hist in pano.historical:
-                if hist.date.year in [2009, 2010, 2011]:
+                if hist.date.year in [2009, 2010,2011]:
                     pano=hist
                     break
             else:

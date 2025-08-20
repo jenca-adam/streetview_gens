@@ -45,7 +45,7 @@ def extract_features(filename):
     gray = cv2.cvtColor(im, cv2.COLOR_BGR2GRAY)
     features = []
     features.extend(analyze_histogram(im))
-    #features.append(analyze_entropy(im))
+    features.append(analyze_entropy(im))
     features.append(analyze_blur(gray))
     features.append(analyze_noise(gray))
     features.append(analyze_edge_density(gray))
@@ -87,11 +87,11 @@ def load_dataset(base_dir):
 def train_classifier(base_dir):
     X, y, label_map = load_dataset(base_dir)
     X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=0.2, random_state=42, stratify=y
+        X, y, test_size=0.1, random_state=0, stratify=y
     )
 
 
-    clf = make_pipeline(StandardScaler(), SVC(kernel="rbf", C=10, gamma="scale", probability=True))
+    clf = make_pipeline(StandardScaler(), SVC(kernel="rbf", C=10, gamma="auto", probability=True))
     clf.fit(X_train, y_train)
 
 
